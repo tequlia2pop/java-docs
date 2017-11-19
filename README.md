@@ -10,6 +10,10 @@
 
 *   [final 关键字](grammer/final-keyword.md)
 
+## 容器
+
+*   [散列和散列码](containers/hashing-and-hash-codes.md)
+
 ## 附录-ASCII
 
 *   [ASCII码对照表](http://tool.oschina.net/commons?type=4)
