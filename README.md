@@ -4,6 +4,10 @@
 
 *   [协变、逆变和不变](object/covariant-contravariant-invariant.md)
 
+### 对于所有对象都通用的方法
+
+*   [clone() 方法](object/common-methods-to-all-objects/clone-method.md)
+
 ## 语法基础
 
 *   [访问权限控制](grammer/access-control.md)  
