@@ -10,11 +10,17 @@
 
 *   [equals() 和 hashCode() 方法](object/common-methods-to-all-objects/equals-and-hashcode-method.md) 覆盖 `equals()` 时请遵守通用约定；覆盖 `equals()` 时总是覆盖 `hashCode()`。
 
+	如果在覆盖 `equals()` 后不覆盖 `hashCode()`，就会违反 hashCode 的通用约定，从而导致该类无法结合所有基于散列的集合一起正常运作。这样的集合包括 `HashMap`、`HashSet`、`LinkedHashMap` 和 `LinkedHashSet`。
+
 *   [toString() 方法](object/common-methods-to-all-objects/tostring-method.md) 始终要覆盖 `toString()`。
 
 *   [clone() 方法](object/common-methods-to-all-objects/clone-method.md) 谨慎地覆盖 `clone()`。
 
 *   finalize() 方法
+
+*   [Comparable#compareTo() 方法](object/common-methods-to-all-objects/compareto-method.md) 虽然不是 `Object` 方法，但是它具有类似的特征。
+
+	如果违反了 compareTo 的通用约定，就会导致该类不能与依赖于比较关系的类一起正常运作。依赖于比较关系的类包括有序集合 `TreeSet` 和 `TreeMap`，以及工具类 `Collections` 和 `Arrays`，它们内部包含有搜索和排序算法。
 
 ## 语法基础
 
