@@ -1,0 +1,284 @@
+// Hibernate Validator
+// Doc Writer <tequlia2pop@gmail.com>
+// :toc: left
+
+[[chapter-bean-constraints]]
+== 声明和验证 bean 约束
+
+在本章中，你将学习如何声明（参见 <<section-declaring-bean-constraints>>）和验证（参见 <<section-validating-bean-constraints>>）bean 约束。<<section-builtin-constraints>> 提供了 Hibernate Validator 所有的内置约束的概述。
+
+如果你有兴趣对方法参数和返回值应用约束，请参阅 <<chapter-method-constraints>>。
+
+
+[[section-declaring-bean-constraints]]
+=== Declaring bean constraints
+
+[[section-validating-bean-constraints]]
+=== Validating bean constraints
+
+[[section-builtin-constraints]]
+=== 内置约束
+
+Hibernate Validator 包含一组基本的常用约束。首要的是 Bean Validation 规范所定义的约束（参见 <<table-spec-constraints>>）。此外，Hibernate Validator 提供了有用的自定义约束（参见 <<table-custom-constraints>> 和 <<table-custom-country-constraints>>）。
+
+[[validator-defineconstraints-spec]]
+==== Bean Validation 约束
+
+<<table-spec-constraints>> 展示了 Bean Validation API 中所有约束的作用和受支持的数据类型。所有这些约束都适用于字段/属性级别，Bean Validation 规范中没有定义类级别的约束。如果你使用了 Hibernate 对象关系映射器，在为模型创建 DDL 时要考虑一些约束的影响（参见 “Hibernate 元数据影响” 列）。
+
+[[table-spec-constraints]]
+[cols="1a,4a,4a,1a", options="header"]
+.Bean Validation 约束
+|===
+| 注解
+| 支持的数据类型
+| 用途
+| Hibernate元数据影响
+
+| `@AssertFalse`
+| `Boolean`、
+  `boolean`
+| 被注释的元素必须为 `false`
+| 无
+
+| `@AssertTrue`
+| `Boolean`、
+  `boolean`
+| 被注释的元素必须为 `true`
+| 无
+
+| `@DecimalMax(value=,inclusive=)`
+| `BigDecimal`、
+  `BigInteger`、
+  `CharSequence`、
+  `byte`、
+  `short`、
+  `int`、
+  `long` 
+  以及基本类型的相应包装器。
+  另外 HV 还支持：`Number` 的任意子类型
+| 如果 `inclusive=false`，则被注释的值必须小于指定的最大值。否则，该值应该小于或等于指定的最大值。参数的值是最大值的字符串表示，它是根据 `BigDecimal` 的字符串表示得来的。
+| 无
+
+| `@DecimalMin(value=,inclusive=)`
+| `BigDecimal`、
+  `BigInteger`、
+  `CharSequence`、
+  `byte`、
+  `short`、
+  `int`、
+  `long` 
+  以及基本类型的相应包装器。
+  另外 HV 还支持：`Number` 的任意子类型
+| 如果 `inclusive=false`，则被注释的值必须大于指定的最小值。否则，该值应该大于或等于指定的最小值。参数的值是最小值的字符串表示，它是根据 `BigDecimal` 的字符串表示得来的。
+| 无
+
+| `@Digits(integer=,fraction=)`
+| `BigDecimal`、
+  `BigInteger`、
+  `CharSequence`、
+  `byte`、
+  `short`、
+  `int`、
+  `long` 
+  以及基本类型的相应包装器。
+  另外 HV 还支持：`Number` 的任意子类型
+| 被注释的值必须是一个数值，它的整数部分的位数最大为 `integer`，小数部分的位数最大为 `fraction`
+| 定义列的精度(precision)和 scale
+
+| `@Future`
+| `java.util.Date`, `java.util.Calendar, `java.time.Instant, `java.time.LocalDate, `java.time.LocalDateTime`, `java.time.LocalTime`, `java.time.MonthDay`, `java.time.OffsetDateTime`, `java.time.OffsetTime`, `java.time.Year`, `java.time.YearMonth`, `java.time.ZonedDateTime`, `java.time.chrono.HijrahDate`, `java.time.chrono.JapaneseDate`, `java.time.chrono.MinguoDate`, `java.time.chrono.ThaiBuddhistDate`；另外，如果 http://joda-time.sourceforge.net/[Joda
+Time] 的 date/time API 位于类路径中，HV 还支持 `ReadablePartial` 和 `ReadableInstant` 的所有实现
+| 注释的日期必须是一个将来的日期
+| 无
+
+| `@FutureOrPresent`
+| `java.util.Date`, `java.util.Calendar, `java.time.Instant, `java.time.LocalDate, `java.time.LocalDateTime`, `java.time.LocalTime`, `java.time.MonthDay`, `java.time.OffsetDateTime`, `java.time.OffsetTime`, `java.time.Year`, `java.time.YearMonth`, `java.time.ZonedDateTime`, `java.time.chrono.HijrahDate`, `java.time.chrono.JapaneseDate`, `java.time.chrono.MinguoDate`, `java.time.chrono.ThaiBuddhistDate`；另外，如果 http://joda-time.sourceforge.net/[Joda
+Time] 的 date/time API 位于类路径中，HV 还支持 `ReadablePartial` 和 `ReadableInstant` 的所有实现
+| 注释的日期必须是现在或将来的日期
+| 无
+
+| `@Max(value=)`
+| `BigDecimal`、
+  `BigInteger`、
+  `byte`、
+  `short`、
+  `int`、
+  `long` 
+  以及基本类型的相应包装器。
+  另外 HV 还支持：`CharSequence` 的所有子类型（由字符序列计算而来的数字值表示），`Number` 的所有子类型
+| 被注释的值小于或等于指定的最大值
+| 在列上添加一个 check 约束
+
+| `@Min(value=)`
+| `BigDecimal`、
+  `BigInteger`、
+  `byte`、
+  `short`、
+  `int`、
+  `long` 
+  以及基本类型的相应包装器。
+  另外 HV 还支持：`CharSequence` 的所有子类型（由字符序列计算而来的数字值表示），`Number` 的所有子类型
+| 被注释的值大于或等于指定的最小值
+| 在列上添加一个 `check` 约束
+
+| `@NotNull`
+| 所有类型
+| 注释的值必须不为 `null`
+| 列不能为空
+
+| `@Null`
+| 所有类型
+| 注释的值必须为 `null`
+| 无
+
+| `@Past`
+| `java.util.Date`、
+  `java.util.Calendar`、
+  `java.time.chrono.ChronoZonedDateTime`、
+  `java.time.Instant`、
+  `java.time.OffsetDateTime`。
+  另外由 HV 支持的是，如果 http://joda-time.sourceforge.net/[Joda
+Time] 的 date/time API 位于类路径中，`ReadablePartial` 和 `ReadableInstant`的所有实现
+| 被注释的日期必须是一个过去的日期
+| 无
+
+| `@Pattern(regex=,flag=)`
+| `CharSequence`
+| 被注释的字符串必须匹配正则表达式 `regex`，该正则表达式应用了给定的 `flag` 匹配
+| 无
+
+| `@Size(min=, max=)`
+| `CharSequence`、
+  `Collection`、
+  `Map` 和
+  数组
+| 注释的元素的大小必须介于 `min` 和 `max` （含）之间
+| 列的长度会被设置为 `max`
+
+| `@Valid`
+| 所有非原始类型
+| 递归地对关联对象执行验证。如果对象是一个集合或数组，则递归地验证其中的元素。如果对象是一个 map，那么将递归地验证 value 元素。
+| 无
+|===
+
+[NOTE]
+====
+除了 <<table-spec-constraints>> 中指出的参数之外，所有约束都有 `message`、`groups` 和 `payload` 三个参数。这是 Bean Validation 规范的要求。
+====
+
+[[validator-defineconstraints-hv-constraints]]
+==== 其他约束
+
+除了 Bean Validation API 定义的约束外，Hibernate Validator 还提供了几个有用的自定义约束，在 <<table-custom-constraints>> 中列出了它们。这些约束均适用于字段/属性级别，只有 `@ScriptAssert` 是类级别的约束。
+
+[[table-custom-constraints]]
+[cols="1a,1a,5a,1a", options="header"]
+.自定义约束
+|===
+| 注解
+| 支持的数据类型
+| 用途
+| Hibernate元数据影响
+
+| `@CreditCardNumber(
+        ignoreNonDigitCharacters=)`
+| `CharSequence`
+| 检查注释的字符序列是否通过 Luhn checksum 测试。注意，该验证旨在检查用户错误，而不是信用卡的有效性！ 参见 http://www.merriampark.com/anatomycc.htm[信用卡号码的解剖]。`ignoreNonDigitCharacters` 允许忽略非数字字符。默认值为 `false`。
+| 无
+
+| `@EAN`
+| `CharSequence`
+| 检查注释的字符序列是否为有效的 http://en.wikipedia.org/wiki/International_Article_Number_%28EAN%29[EAN] 条形码。`type` 确定条形码的类型。默认值为 `EAN-13`。
+| 无
+
+| `@Email`
+| `CharSequence`
+| 检查指定的字符序列是否是有效的电子邮件地址。可选参数 `regexp` 和 `flags` 允许指定电子邮件必须匹配的附加正则表达式（包括正则表达式 flag）。
+| 无
+
+| `@Length(min=,
+           max=)`
+| `CharSequence`
+| 验证注释的字符序列是否介于 `min` 和 `max` 之间（含）
+| 列的长度会被设置为 `max`
+
+| `@LuhnCheck(startIndex=,
+              endIndex=,
+              checkDigitIndex=,
+              ignoreNonDigitCharacters=)`
+| `CharSequence`
+| 检查注释的字符序列中的数字是否通过 Luhn checksum 算法（参见 http://en.wikipedia.org/wiki/Luhn_algorithm[Luhn 算法]）。`startIndex` 和 `endIndex` 允许仅在指定的子字符串上执行算法。`checkDigitIndex` allows to use an arbitrary digit within the character sequence as the check digit. If not specified it is assumed that the check digit is part of the specified range. 最后还有一个重要的属性，`ignoreNonDigitCharacters` 允许忽略非数字字符。
+| 无
+
+| `@Mod10Check(multiplier=,
+               weight=,
+               startIndex=,
+               endIndex=,
+               checkDigitIndex=,
+               ignoreNonDigitCharacters=)`
+| `CharSequence`
+| 检查注释字符序列中的数字是否通过通用的 mod 10 checksum 算法。`multiplier` 确定奇数的乘数（默认为3），`weight` 为偶数加权权重（默认为1）。`startIndex` 和 `endIndex` 允许仅在指定的子字符串上运行算法。 `checkDigitIndex` allows to use an arbitrary digit within the character sequence as the check digit. If not specified it is assumed that the check digit is part of the specified range. 最后还有一个重要的属性，`ignoreNonDigitCharacters` 允许忽略非数字字符。
+| 无
+
+| `@Mod11Check(threshold=,
+               startIndex=,
+               endIndex=,
+               checkDigitIndex=,
+               ignoreNonDigitCharacters=,
+               treatCheck10As=,
+               treatCheck11As=)`
+| `CharSequence`
+| 检查注释字符序列中的数字是否通过 mod 11 checksum 算法。`threshold` 指定了 mod11 乘数增长的阈值; 如果未指定值，则乘数将无限增长。当 mod 11 checksum 分别等于 10 或 11 时 `treatCheck10As` 和 `treatCheck11As` 指定了要使用的校验数字。默认为 X 和 0。 `startIndex`、`endIndex`、`checkDigitIndex` 和 `ignoreNonDigitCharacters` 与 `@Mod10Check` 中的对应属性具有相同的语义。
+| 无
+
+| `@NotBlank`
+| `CharSequence`
+| 注释的字符序列必须不为 `null`，且 trim 后的长度大于 0。与 `@NotEmpty` 的区别是，该约束只能应用于字符串，并且将忽略结尾空白符。
+| 无
+
+| `@NotEmpty`
+| `CharSequence`、
+  `Collection`、
+  `Map` 和
+  数组
+| 检查注释元素是否不为 null 也不为空（长度等于0）
+| 无
+
+| `@Range(min=,max=)`
+| `BigDecimal`、
+  `BigInteger`、
+  `CharSequence`、
+  `byte`、
+  `short`、
+  `int`、
+  `long` 以及
+  基本类型的相应包装器
+| 检查注释的值是否在（包括）指定的最小值和最大值之间
+| 无
+
+| `@SafeHtml(whitelistType=,
+             additionalTags=,
+             additionalTagsWithAttributes=)`
+| `CharSequence`
+| 检查注释的值是否包含潜在的恶意片段，例如 `<script/>`。为了使用这个约束，必须将 http://jsoup.org/[jsoup] 库放到类路径中。使用`whitelistType` 属性可以选择预定义的白名单类型，还可以通过 `additionalTags` 或 `additionalTagsWithAttributes` 对白名单进行细化。前者允许添加没有任何属性的标签，而后者允许指定标签，以及可选地使用 `@SafeHtml.Tag` 注解来允许属性。
+| 无
+
+| `@ScriptAssert(lang=,
+                 script=,
+                 alias=)`
+| 所有类型
+| 检查是否可以成功地计算注释元素的给定脚本。为了使用这个约束，必须将 JSR 223("Scripting for the JavaTM Platform") 定义的 Java Scripting API 的实现放到类路径中。要计算的表达式可以用任意的脚本或表达式语言编写，只要 JSR 223 兼容引擎可以在类路径下找到该表达式即可。
+| 无
+
+| `@URL(protocol=,
+        host=,
+        port=,
+        regexp=,
+        flags=)`
+| `CharSequence`
+| 根据 RFC2396 来检查注释的字符序列是否为有效的URL。如果指定了任意的可选参数 `protocol`、`host` 或 `port`，则相应的 URL 片段必须与指定的值匹配。可选参数 `regexp` 和 `flags` 允许指定 URL 必须匹配的附加正则表达式（包括正则表达式 flag）。该约束默认使用 `java.net.URL` 的构造函数来验证给定的字符串是否表示一个有效的 URL。还可以使用基于正则表达式的版本——`RegexpURLValidator`——可以通过 XML（参见 <<section-mapping-xml-constraints>>）或 编程式 API（参见 <<section-programmatic-constraint-definition>>） 来配置。
+| 无
+|===
+
+===== Country specific constraints

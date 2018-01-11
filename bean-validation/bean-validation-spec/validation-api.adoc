@@ -1,0 +1,225 @@
+// Bean Validation
+// Doc Writer <tequlia2pop@gmail.com>
+// :toc: left
+
+[[validationapi]]
+== Validation APIs
+
+[[validationapi-validatorapi]]
+=== Validator API
+
+[[validationapi-constraintviolation]]
+=== ConstraintViolation
+
+[[validationapi-message]]
+=== 消息 interpolation
+
+[[default-messageresolver]]
+==== 默认的消息 interpolation
+
+所有一致的 Bean Validation 实现都包含了默认的 message interpolator，它必须遵守在此定义的用于插入消息描述符的算法。作为消息插值的前提条件如下：
+
+* 每个约束都通过其 message 属性定义了一个消息描述符。
+
+* 每个约束定义都定义了该约束默认的消息描述符。
+
+* 通过在约束上设置 message 属性，可以在约束声明时覆盖消息。
+
+消息描述符是一个字符串文本，可以包含一个或多个消息参数或表达式。消息参数和表达式分别是包含在 {} 或 ${} 中的字符串文本。以下字符转义规则适用：
+
+* \{ 被视为文本，其中的 { 不会认为是消息参数的开始
+
+* \} 被视为文本，其中的 } 不会认为是消息参数的结尾
+
+* \\ 被认为是文本，其中的 \ 不会被认为是转义字符
+
+* \$ 被认为是文本，其中的 $ 不会被认为是消息表达式的开始
+
+下面是使用消息参数和表达式的两个示例。第二个 <<message-expressions>> 中定义的表达式语言进行评估。
+
+.使用参数的消息
+====
+
+[source, JAVA]
+----
+Value must be between {min} and {max}
+----
+
+====
+
+.使用表达式的消息
+====
+
+[source, JAVA]
+----
+Must be greater than ${inclusive == true ? 'or equal to ' : ''}{value}
+----
+
+====
+
+[[default-resolution-algorithm]]
+===== 默认的 message interpolation 算法
+
+默认的 message interpolator 使用以下步骤：
+
+. 从消息字符串中提取消息参数，将它作为键去搜索名为 ValidationMessages 的 ResourceBundle（通常实现为属性文件 /ValidationMessages.properties 及其 locale 变体），这里使用的是定义好的 local（请参见 <<message-interpolation-default-locale>>）。如果找到了属性，则消息参数将替换为消息字符串中的属性值。递归地应用步骤 1，直到没有替换可执行为止（例如，消息参数值本身可以包含消息参数）。
+
+. 从消息字符串中提取消息参数，将它作为键去搜索 Bean Validation 提供程序内置的 ResourceBundle，这里使用的是定义好的 locale（请参见 <<message-interpolation-default-locale>>）。如果找到了属性，则消息参数将替换为消息字符串中的属性值。与步骤 1 相反，步骤 2 不会递归处理。
+
+. 如果步骤 2 触发替换，则再次应用步骤 1。否则执行步骤 4。
+
+. 从消息字符串中提取消息参数。与约束的属性名称匹配的那些将被约束声明中的该属性的值替换。参数插值优先于消息表达式。例如，对于消息描述符 ${value}，首先尝试将 {value} 作为消息参数，再尝试将 ${value} 作为消息表达式。
+
+. 从消息字符串中提取消息表达式，并使用表达式语言来评估它。另请参见 <<message-expressions>>。
+
+NOTE: 所提出的算法确保了在所有级别的递归解析上，自定义的资源 bundle 始终优先于内置的资源 bundle。它还确保不会进一步插入约束声明的属性值。
+
+NOTE: 消息参数优于表达式插入确保了向后兼容 Bean Validation 1.0。
+
+[[message-interpolation-default-locale]]
+===== 缺省的 message interpolation 的区域设置
+
+用于 message interpolation 的区域设置定义如下：
+
+* 如果通过 interpolate(String, Context, Locale) 显式地将 locale 传递给 interpolator，则使用这个提供的实例。
+
+* 否则，将使用 Locale.getDefault() 提供的缺省的 Locale。
+
+[[message-expressions]]
+===== 使用 Expression Language（EL）的消息表达式
+
+默认的 message interpolation 允许使用 JSR 341 中定义的 Expression Language（EL）。由 EL 求值的表达式需要位于消息描述符 ${} 中。以下属性和 bean 必须在 EL 上下文中可用：
+
+* 约束声明的属性值映射到它们的属性名称
+
+* the validated value mapped under the name validatedValue
+
+* 一个 bean 映射到 name formatter，它暴露了多参方法 format(String format, Object... args)。此方法必须像 java.util.Formatter.format(String format, Object... args) 一样。用于格式化的区域设置由 <<message-interpolation-default-locale>> 定义。formatter bean 允许格式化属性值，例如在验证值为 98.12345678 的情况下，${formatter.format('%1$.2f', validatedValue)} 将格式化为 98.12（小数点后两位数字，其中 '.'  或 ','的使用是区域设置特定的）。
+
+如果在消息插值期间发生异常（例如无效表达式或对未知属性的引用），消息表达式将保持不变。
+
+==== 自定义 message interpolation
+
+[[validationapi-message-examples]]
+==== 示例
+
+这些示例描述了一个 message interpolation，它基于默认的 message interpolator 的内置消息（请参阅 <<standard-resolver-messages>>），以及 <<table-messageinterpolation>> 中的 ValidationMessages.properties 文件。当前语言环境假定为英语。
+
+[literal]
+----
+//ValidationMessages.properties
+myapp.creditcard.error=credit card number not valid
+----
+
+[[table-messageinterpolation]]
+.message interpolation
+|===
+| Failing constraint declaration| interpolated message
+
+| @NotNull
+| must not be null
+
+| @Max(30)
+| must be less than or equal to 30
+
+| @Size(min=5, max=15, message="Key must have \\{{min}\\} \\ \\{{max}\\} characters")
+| Key must have {5} \ {15} characters
+
+| @Digits(integer=9, fraction=2)
+| numeric value out of bounds (<9 digits>.<2 digits> expected)
+
+| @CreditCard(message={myapp.creditcard.error})
+| credit card number not valid
+|===
+
+这里有一种方法来指定要在给定 Validator 上选择的 Locale 值。Locale  感知的 MessageInterpolator。有关 API 的更多详细信息，请参见 <<bootstrapping>>。
+
+.Use MessageInterpolator to use a specific Locale value
+====
+[source,java,indent=0]
+[subs="verbatim,quotes"]
+----
+/**
+ * Delegates to a MessageInterpolator implementation but enforces a given Locale
+ */
+public class LocaleSpecificMessageInterpolator implements MessageInterpolator {
+    private final MessageInterpolator defaultInterpolator;
+    private final Locale defaultLocale;
+
+    public LocaleSpecificMessageInterpolator(MessageInterpolator interpolator, Locale locale) {
+        this.defaultLocale = locale;
+        this.defaultInterpolator = interpolator;
+    }
+
+    /**
+     * enforces the locale passed to the interpolator
+     */
+    public String interpolate(String message, 
+                              Context context) {
+        return defaultInterpolator.interpolate(message, 
+                                               context, 
+                                               this.defaultLocale);
+    }
+
+    // no real use, implemented for completeness
+    public String interpolate(String message,
+                              Context context,
+                              Locale locale) {
+        return defaultInterpolator.interpolate(message, context, locale);
+    }
+}
+
+
+Locale locale = getMyCurrentLocale();
+MessageInterpolator interpolator = new LocaleSpecificMessageInterpolator(
+                                       validatorFactory.getMessageInterpolator(),
+                                       locale);
+
+Validator validator = validatorFactory.usingContext()
+                                      .messageInterpolator(interpolator)
+                                      .getValidator();
+----
+====
+
+然而，大多数时候，相关的 Locale 将由你的应用程序框架透明地提供。此框架将实现自己的 MessageInterpolator 版本，并在 ValidatorFactory 配置期间传递它。应用程序自身不必设置 Locale。此示例展示了容器框架如何实现 MessageInterpolator 以提供用户特定的默认 Locale。
+
+.Contextual container possible MessageInterpolator implementation
+====
+[source,java,indent=0]
+[subs="verbatim,quotes"]
+----
+public class ContextualMessageInterpolator implements MessageInterpolator {
+    private final MessageInterpolator delegate;
+
+    public ContextualMessageInterpolator(MessageInterpolator delegate) { 
+        this.delegate = delegate; 
+    }
+
+    public String interpolate(String message, Context context) {
+        Locale locale = Container.getManager().getUserLocale();
+        return this.delegate.interpolate(
+                        message, context, locale );
+    }
+
+    public String interpolate(String message, Context context, Locale locale) {
+        return this.delegate.interpolate(message, context, locale);
+    }
+}
+
+
+//Build the ValidatorFactory
+Configuration<?> configuration = Validation.byDefaultProvider().configure();
+ValidatorFactory factory = configuration
+    .messageInterpolator( 
+        new ContextualMessageInterpolator( 
+                configuration.getDefaultMessageInterpolator() ) )
+    .buildValidatorFactory();
+
+//The container uses the factory to validate constraints using the specific MessageInterpolator
+Validator validator = factory.getValidator();
+----
+====
+
+=== Triggering method validation
+
+=== Bootstrapping

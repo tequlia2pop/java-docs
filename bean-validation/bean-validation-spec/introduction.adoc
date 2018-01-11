@@ -1,0 +1,102 @@
+// Bean Validation
+// Doc Writer <tequlia2pop@gmail.com>
+// :toc: left
+
+[[introduction]]
+== 介绍
+
+本文档是在 Java EE 和 Java SE 中用于 JavaBean 验证的 Java API 规范。这项工作的技术目标是为 Java 应用程序开发人员提供对象级的约束声明和验证设施，以及约束元数据仓库和查询 API。
+
+它还提供了方法和构造器验证设施，以确保可以在它们的参数和返回值上声明约束。
+
+=== 专家组
+
+This work has been conducted as part of JSR 349 and formerly JSR 303 under the Java Community Process Program. This specification is the result of the collaborative work of the members of the JSR 349 Expert Group and the community at large. The following persons have actively contributed to Bean Validation 1.1 in alphabetical order:
+这项工作作为 JSR 349 和以前的 JSR 303 的一部分，由 Java Community Process 计划进行。本规范是 JSR 349 专家组成员和整个社群合作工作的结果。以下人员积极为 Bean Validation 1.1 做出了贡献，按字母顺序排列：
+
+* Matt Benson
+* Paul Benedict
+* Emmanuel Bernard (Red Hat, Inc.) - Specification Lead
+* Edward Burns (Oracle)
+* Peter Davis
+* Linda DeMichiel (Oracle)
+* Hardy Ferentschik (Red Hat, Inc.)
+* Antonio Goncalves
+* Cemalettin Koç
+* Rich Midwinter
+* Gunnar Morling (individual then Red Hat, Inc.)
+* Pete Muir (Red Hat, Inc.)
+* Michael Nascimento Santos
+* Gerhard Petracek
+* Kevin Pollet (SERLI)
+* Jagadish Prasath Ramu (Oracle)
+* Bill Shannon (Oracle)
+* Sebastian Thomschke
+
+JSR-303 的前专家组成员，按字母顺序排列：
+
+* Geert Bevin
+* Emmanuel Bernard (Red Hat, Inc.) - Specification Lead
+* Uri Boness
+* Erik Brakkee (Ericsson AB)
+* Ed Burns (Sun Microsystems, Inc.)
+* Jason Carreira
+* Robert Clevenger (Oracle - retired)
+* Linda DeMichiel (Sun Microsystems, Inc.)
+* Tim Fennel
+* Bharath Ganesh (Pramati Technologies)
+* Romain Guy (Google Inc.)
+* Robert Harrop
+* Jacob J. Hookom
+* Bob Lee (Google Inc.)
+* Craig R. McClanahan (Sun Microsystems, Inc.)
+* Niall K. Pemberton
+* Steve Peterson
+* Dhanji R. Prasanna (Google Inc., formerly individual)
+* Gerhard Petracek
+* Matt Raible
+* Michael Nascimento Santos
+* Sebastian Thomschke
+* Jon Wetherbee (Oracle)
+
+=== 规范的目标
+
+验证数据是一个常见的任务，它发生在整个应用程序中——从表示层到持久化层。如果在每一层中实现相同的验证逻辑，通常被证明是耗时且容易出错的。为了避免在每一层中重复这些验证，开发人员通常将验证逻辑直接捆绑到领域模型，使用验证编码来整理领域类（实际上是关于类本身的元数据）。
+
+该 JSR 定义了用于 JavaBean 验证的元数据模型和 API。默认的元数据源是注解，通过使用 XML 验证描述符能够覆盖和扩展元数据。
+
+由该 JSR 开发的验证 API 不适用于任何一层或编程模型。特别是它没有绑定到 web 层或持久化层，并且可用于服务器端应用程序编程，以及富客户端 Swing 应用程序开发人员。该 API 被视为对 JavaBean 对象模型的一般扩展，因此预期它将被用作其他规范中的核心组件。易用性和灵活性影响了本规范的设计。
+
+从版本 1.1 开始，Bean Validation 约束也可以应用于方法参数和返回值，它们可以是任意的 Java 类型。因此，Bean Validation API 可以用于描述和验证应用于给定方法（"Programming by Contract", PbC）的协议（包括前置条件和后置条件）。注意，开发一个完整的 PbC 解决方案不是本规范的目标。本规范的目标是，基于已证实的 Bean Validation API 概念，提供一个易于使用的设施，它满足了关于将约束应用于方法参数和返回值的最常见的需求。
+
+=== Java 版本要求
+
+该规范使用了 Java 6.0 语言的功能。并不要求规范的实现与 6.0 之前的 Java 语言版本兼容。
+
+=== 文档的组织方式
+
+本文档在单独的章节中描述了 bean 验证规范的各个方面。应该记住的是，规范是一个一致的整体。
+
+<<constraintsdefinitionimplementation>> 描述了如何定义约束。
+
+<<constraintdeclarationvalidationprocess>> 描述了使用注解注释的 JavaBean 类如何来描述约束。
+
+<<validationapi>> 描述了如何以编程方式验证 JavaBean。
+
+<<constraintmetadata>> 描述了元数据查询 API 的工作原理。
+
+<<builtinconstraints>> 列出了所有内置的约束。
+
+<<xml>> 描述了用于配置和映射的 XML 部署描述符。
+
+<<exception>> 描述了 Bean Validation 使用的异常模型和层次结构。
+
+<<integration>> 描述了 Bean Validation 与其他技术的不同集成点。在某些情况下，必须参考最新集成规则的相应规范。
+
+在 <<terminology>> 中，概述了关键概念。一些评论者发现，首先阅读术语部分有助于更好地理解规范。
+
+更改日志可在 <<changelog>> 中找到。
+
+=== 如何评论
+
+专家组渴望得到读者的反馈。请随时与我们联系。你可以在 http://beanvalidation.org/contribute/ 上获取所有详细信息。

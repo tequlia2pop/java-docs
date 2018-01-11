@@ -28,6 +28,8 @@
 
 *   [final 关键字](grammer/final-keyword.md)
 
+*   [日期和时间](date-and-time.md)
+
 ## 容器
 
 *   [散列和散列码](containers/hashing-and-hash-codes.md)
@@ -51,6 +53,10 @@ Java 如何在运行时识别对象和类的信息？主要有两种方式：
 *   “反射”机制，它允许我们在运行时发现和使用类的信息。
 
 	一致的错误报告模型的存在使得我们能够通过使用反射编写动态的代码。当然，尽力编写能够进行静态检查的代码是值得的，只要你确实能够这么做。但是动态代码是将 Java 与其他诸如 C++ 这样的语言区分开的重要工具之一。
+	
+## JavaEE
+
+*   [Bean Validation](bean-validation/README.md)
 
 ## 附录-ASCII
 

@@ -1,0 +1,32 @@
+= Bean Validation 规范
+Doc Writer <tequlia2pop@gmail.com>
+:toc: left
+:homepage: https://github.com/beanvalidation/beanvalidation-spec/tree/1.1-full-spec-diff/sources
+
+include::introduction.adoc[]
+
+== What's new in 1.1
+
+== Constraint Definition
+
+include::constraint-declaration-validation.adoc[]
+
+include::validation-api.adoc[]
+
+== Constraint metadata request APIs
+
+include::builtin-constraints.adoc[]
+
+== XML deployment descriptor
+
+== Exception model
+
+== Integration
+
+== Terminology
+
+include::appendix-standardresolvermessages.adoc[]
+
+== Java Persistence 2.0 and schema generation
+
+== Changelog

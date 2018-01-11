@@ -1,0 +1,30 @@
+// Bean Validation
+// Doc Writer <tequlia2pop@gmail.com>
+// :toc: left
+
+[[standard-resolver-messages]]
+[appendix]
+== 标准的 ResourceBundle 消息
+
+下面列出的属性由默认的消息 interpolator 所解析。
+
+[source, JAVA]
+----
+javax.validation.constraints.AssertFalse.message=must be false
+javax.validation.constraints.AssertTrue.message=must be true
+javax.validation.constraints.DecimalMax.message=\
+    must be less than ${inclusive == true ? 'or equal to ' : ''}{value}
+javax.validation.constraints.DecimalMin.message=\
+    must be greater than ${inclusive == true ? 'or equal to ' : ''}{value}
+javax.validation.constraints.Digits.message=\
+    numeric value out of bounds (<{integer} digits>.<{fraction} digits> expected)
+javax.validation.constraints.Future.message=must be a future date
+javax.validation.constraints.Max.message=must be less than or equal to {value}
+javax.validation.constraints.Min.message=must be greater than or equal to {value}
+javax.validation.constraints.NotNull.message=must not be null
+javax.validation.constraints.Null.message=must be null
+javax.validation.constraints.Past.message=must be a past date
+javax.validation.constraints.Pattern.message=\
+    must match the following regular expression: {regexp}
+javax.validation.constraints.Size.message=size must be between {min} and {max}
+----

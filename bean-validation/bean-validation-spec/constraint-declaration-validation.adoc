@@ -1,0 +1,119 @@
+// Bean Validation
+// Doc Writer <tequlia2pop@gmail.com>
+// :toc: left
+
+[[constraintdeclarationvalidationprocess]]
+== 约束声明和验证过程
+
+Bean Validation 规范定义了一个框架，它用于在 JavaBean 的类、字段和属性上声明约束。约束在类型上声明，并根据实例或实例图进行求值。
+
+Bean Validation 还提供了一种方法来声明构造函数和方法的约束，其中参数和返回值是被约束的元素。我们将在 <<constraintdeclarationvalidationprocess-methodlevelconstraints>> 中详细讨论方法的约束声明。
+
+[[constraintdeclarationvalidationprocess-requirements]]
+=== 被验证类的要求
+
+具有约束和预期的对象，要由 Bean Validation 提供程序执行验证的话，必须满足以下要求：
+
+* 要验证的属性必须遵循 JavaBean 读取属性的方法签名约定，由 http://download.oracle.com/otndocs/jcp/7224-javabeans-1.01-fr-spec-oth-JSpec/[JavaBean 规范] 所定义。这些属性通常称为 getter。
+
+* 不能验证静态字段和静态方法。
+
+* 约束可以应用于接口和超类。
+
+.getter 是什么？
+****
+JavaBean 规范指定 getter 是一个方法
+
+* 名称以 get 开头，具有返回类型，但没有参数
+
+* 名称以 is 开头，没有参数，返回布尔值
+****
+
+注解定义的目标可以是一个字段、属性、类型、构造函数或方法返回值，constructor or method parameter or constructor or method cross-parameter provided that:：
+
+* 约束定义支持指定的目标（java.lang.annotation.Target）
+
+* one of the ConstraintValidators declared on the constraint supports the declared type of the target or in the case of cross-parameter, one cross-parameter ConstraintValidator is present (see <<typevalidatorresolution>> to learn about ConstraintValidator resolution).
+
+[[constraintdeclarationvalidationprocess-requirements-object]]
+==== 对象验证
+
+约束声明可以应用于类或接口。对类或接口应用约束表示对类或实现接口的类的状态的验证。
+
+[[constraintdeclarationvalidationprocess-requirements-property]]
+==== 字段和属性验证
+
+约束声明可以应用于同一对象类型的字段和属性。然而，在字段及其关联属性之间不应重复相同的约束（约束验证将被应用两次）。建议具有约束声明的对象遵守单状态访问策略（要么注释字段，要么注释属性）。
+
+.Java Persistence 和 Bean Validation
+****
+为了最大的可移植性，具有 Bean Validation 约束的持久化属性应该与 Java Persistence 使用相同的访问策略。换句话说，将 Bean Validation  约束注解与 Java Persistence 注解放置在相同的元素（字段 或 getter）上。
+****
+
+当使用约束声明注释字段时，将使用字段访问策略来访问由该约束所验证的状态。
+
+当使用约束声明注释属性时，将使用属性访问策略来访问由该约束所验证的状态。
+
+当使用字段访问策略时，bean 验证提供程序直接访问实例变量。当使用属性访问策略时，bean 验证提供程序通过属性访问器方法访问状态。当使用约束属性时，需要该类的约束属性遵循 JavaBeans 读取属性（由 JavaBeans Introspector 类定义）的方法签名约定。在这种情况下，对于类型 T 的所有约束属性，都有一个名为 get<Property-name> 的 getter 方法。该方法必须没有参数。对于布尔属性，也可以使用 is<Property-name> 来替代 getter 方法。具体来说，如果 getX 是 getter 方法的名称，其中 X 是一个字符串，持久化属性的名称由 java.beans.Introspector.decapitalize(X) 的结果定义。
+
+字段或方法的可见性不受约束。
+
+[[constraintdeclarationvalidationprocess-requirements-graphvalidation]]
+==== 对象图验证
+
+除了支持实例验证之外，还支持对对象图的验证。对象图验证的结果作为一组统一的约束违规返回。 @Valid 用于表示关联的验证遍历。
+
+.@Valid 示例
+====
+[source,java,indent=0]
+[subs="verbatim,quotes"]
+----
+/**
+ * Marks a property, method parameter or method return type for validation cascading.
+ * <p/>
+ * Constraints defined on the object and its properties are be validated when the
+ * property, method parameter or method return type is validated.
+ * <p/>
+ * This behavior is applied recursively.
+ *
+ * @author Emmanuel Bernard
+ * @author Hardy Ferentschik
+ */
+@Target({ METHOD, FIELD, CONSTRUCTOR, PARAMETER })
+@Retention(RUNTIME)
+public @interface Valid {
+}
+----
+====
+
+考虑 bean X 包含一个类型为 Y 的字段的情况。通过使用 @Valid 注解注释字段 Y，当 X 被验证时，Validator 将验证 Y（及其属性）。在类型 Y（子类，实现）中声明的字段中包含的值的确切类型 Z，会在运行时确定。使用 Z 的约束定义。这确保了标记为 @Valid 的关联的正确的多态行为。
+
+集合值，数组值和通常可迭代的字段和属性也可以使用 @Valid 注解。这将会验证迭代器的内容。支持实现 java.lang.Iterable 的所有对象。具体包括：
+
+* 对象数组
+
+* java.util.Collection
+
+* java.util.Set
+
+* java.util.List
+
+* java.util.Map（特殊处理见下文）
+
+迭代器提供的每个对象都会被验证。对于 Map，所有 Map.Entry 的值（由 getValue 检索）会被验证（key 不会被验证）。
+
+与常规引用一样，其类型在运行时确定，并使用此特定类型的约束定义。
+
+@Valid 注解将递归应用。一致性实现根据 <<constraintdeclarationvalidationprocess-validationroutine-graphvalidation>> 所述的规则来避免无限循环。
+
+=== Constraint declaration
+
+=== Inheritance (interface and superclass)
+
+=== Group and group sequence
+
+=== Method and constructor constraints
+
+=== Validation routine
+
+=== Examples

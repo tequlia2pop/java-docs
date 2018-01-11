@@ -1,0 +1,32 @@
+= Hibernate Validator 参考指南
+Doc Writer <tequlia2pop@gmail.com>
+:toc: left
+:homepage: https://github.com/hibernate/hibernate-validator/tree/master/documentation/src/main/asciidoc
+
+== Preface
+
+== Getting started
+
+include::declaring-and-validating-bean-constraints.adoc[]
+
+== Declaring and validating method constraints
+
+== Interpolating constraint error messages
+
+== Grouping constraints
+
+== Creating custom constraints
+
+== Configuring via XML
+
+== Bootstrapping
+
+== Using constraint metadata
+
+== Integrating with other frameworks
+
+== Hibernate Validator Specifics
+
+== Annotation Processor
+
+== Further reading
